@@ -1,0 +1,29 @@
+// assignment 2 client
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <stdio.h>
+#include <string.h>
+int main()
+{
+	int sockfd, n;
+	char sendline[100];
+	char recvline[100];
+	struct sockaddr_in servaddr;
+	sockfd = socket(AF_INET, SOCK_STREAM, 0); // SOCK_STREAM for TCP , 0 for default protocol
+	bzero(&servaddr, sizeof(servaddr));		  // initialize servaddr to 0
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_port = htons(22000);
+	servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	// servaddr.sin_addr.s_addr=htonl(INADDR_ANY); // use this if server is running on the same machine for random ip address
+	//  inet_pton(AF_INET,"127.0.0.1",&(servaddr.sin_addr));
+	connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+	bzero(sendline, 100);
+	bzero(recvline, 100);
+	printf("Enter the message: ");
+	fgets(sendline, 100, stdin);				 /*stdin = 0 , for standard input */
+	send(sockfd, sendline, strlen(sendline), 0); // 0 for default flags
+	recv(sockfd, recvline, 100, 0);				 // 0 for default flags
+	printf("%s", recvline);
+	close(sockfd);
+}
