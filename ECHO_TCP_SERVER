@@ -1,0 +1,33 @@
+// assignment 2 server
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <stdio.h>
+#include <string.h>
+int main()
+{
+    char str[100];
+    int listen_fd, comm_fd; // listen_fd is the socket descriptor for the server, comm_fd is the socket descriptor for the client
+    struct sockaddr_in servaddr;
+    listen_fd = socket(AF_INET, SOCK_STREAM, 0); // SOCK_STREAM for TCP , 0 for default protocol
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY); // use this if server is running on the same machine for random ip address
+    servaddr.sin_port = htons(22000);
+    bind(listen_fd, (struct sockaddr *)&servaddr, sizeof(servaddr)); // bind the socket to the address and port number specified in servaddr
+    listen(listen_fd, 10); // listen for connections on the socket listen_fd, 10 is the backlog for number of clients that can be waiting for connection
+    while (1)
+    {
+        comm_fd = accept(listen_fd, (struct sockaddr *)NULL, NULL); // NULL, NULL are for client address and client length and required only once
+        bzero(str, 100);
+        recv(comm_fd, str, 100, 0);
+        printf("Echoing back - %s", str);
+        send(comm_fd, str, strlen(str), 0);
+        close(comm_fd);
+        if (strcmp(str, "exit") == 0)
+        {
+            break;
+        }
+    }
+    close(listen_fd);
+}
