@@ -1,0 +1,56 @@
+// assignment 4 server
+
+#include <stdio.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h> // read(), write(), close()
+#define MAX 80
+#define PORT 8080
+#define SA struct sockaddr
+
+// loop infinite times as it is chat so it will not terminate as server always running
+void func(int connfd)
+{
+	char buff[MAX];
+	int n;
+	for (;;) // infinite loop
+	{
+		bzero(buff, MAX);
+		read(connfd, buff, sizeof(buff));
+		printf("From Client : %s To Client :\t", buff);
+		if (strncmp("exit", buff, 4) == 0)
+		{
+			printf("Client Exit...\n");
+			break;
+		}
+		bzero(buff, MAX);
+		n = 0;
+		while ((buff[n++] = getchar()) != '\n');
+		write(connfd, buff, sizeof(buff));
+		if (strncmp("exit", buff, 4) == 0)
+		{
+			printf("Server Exit...\n");
+			break;
+		}
+	}
+}
+int main()
+{
+	int sockfd, connfd, len;
+	struct sockaddr_in servaddr, cli;
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	bzero(&servaddr, sizeof(servaddr));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons(8080);
+	bind(sockfd, (SA *)&servaddr, sizeof(servaddr));
+	listen(sockfd, 5);
+	len = sizeof(cli);
+	connfd = accept(sockfd, (SA *)&cli, &len);
+	func(connfd);
+	close(sockfd);
+}
