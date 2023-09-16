@@ -1,0 +1,36 @@
+// assignment 3 server
+
+#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main()
+{
+    char buff[80]; // buffer to store the message from client
+    int sockfd, clen; // clen is the length of the client address
+    struct sockaddr_in servaddr, cli; //cli is the client address as we are not using accept as it is connectionless
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd != -1)
+        printf("socket creation successful");
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(43454);
+    bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+    clen = sizeof(cli); // length of the client address
+    while (1)
+    {
+        recvfrom(sockfd, buff, sizeof(buff), 0, (struct sockaddr *)&cli, &clen);
+        printf("\n UDP Echo back:%s", buff);
+        sendto(sockfd, buff, strlen(buff), 0, (struct sockaddr *)&cli, clen);
+        if (strncmp("exit", buff, 4) == 0)
+        {
+            printf("Client Exit\n");
+            break;
+        }
+    }
+}
