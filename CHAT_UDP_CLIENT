@@ -1,0 +1,44 @@
+// assignment 5 client
+
+#include <stdio.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main()
+{
+	char buff[80];
+	int sockfd, len, n;
+	struct sockaddr_in serveraddr;
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	bzero(&serveraddr, sizeof(len));
+	serveraddr.sin_family = AF_INET;
+	serveraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serveraddr.sin_port = htons(43454);
+	len = sizeof(serveraddr);
+	while (1)
+	{
+		printf("\nEnter string :");
+		n = 0;
+		while ((buff[n++] = getchar()) != '\n');
+		sendto(sockfd, buff, sizeof(buff), 0, (struct sockaddr *)&serveraddr, len);
+		if (strncmp("exit", buff, 4) == 0)
+		{
+			printf("Client Exit\n");
+			break;
+		}
+		bzero(buff, sizeof(buff));
+		recvfrom(sockfd, buff, sizeof(buff), 0, (struct sockaddr *)&serveraddr, len);
+		printf("\nFrom server: %s", buff);
+		if (strncmp("exit", buff, 4) == 0)
+		{
+			printf("Server Exit\n");
+			break;
+		}
+	}
+	close(sockfd);
+	return 0;
+}
